@@ -4,6 +4,7 @@
 #include <math.h>
 #include "ukf.h"
 #include "tools.h"
+#include <fstream>
 
 using namespace std;
 
@@ -37,6 +38,13 @@ int main()
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
+
+  //ofstream out_file_radar_("outfile_radar.txt", ofstream::out);
+  //ofstream out_file_lidar_("outfile_lidar.txt", ofstream::out);
+  int radar_file_check = remove("outfile_radar.txt");
+  cout << "radar file check =" << radar_file_check << endl;
+  int lidar_file_check = remove("outfile_lidar.txt");
+  cout << "lidar file check =" << lidar_file_check << endl;
 
   h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -141,9 +149,15 @@ int main()
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 
           if (sensor_type.compare("L") == 0) {
-            cout << "Lidar NIS = " << ukf.NIS_lidar_ << endl;
+            //cout << "Lidar NIS = " << ukf.NIS_lidar_ << endl;
+            ofstream out_file_lidar_("outfile_lidar.txt", ofstream::app);
+            out_file_lidar_ << ukf.NIS_lidar_ << "\r\n" << endl;
+            out_file_lidar_.close();
           } else if (sensor_type.compare("R") == 0) {
-              cout << "Radar NIS = " << ukf.NIS_radar_ << endl;
+              //cout << "Radar NIS = " << ukf.NIS_radar_ << endl;
+              ofstream out_file_radar_("outfile_radar.txt", ofstream::app);
+              out_file_radar_ << ukf.NIS_radar_ << "\r\n" << endl;
+              out_file_radar_.close();
           }
         }
       } else {
@@ -189,6 +203,7 @@ int main()
     return -1;
   }
   h.run();
+
 }
 
 
