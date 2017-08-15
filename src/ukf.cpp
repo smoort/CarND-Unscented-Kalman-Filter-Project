@@ -279,7 +279,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   You'll also need to calculate the lidar NIS.
   */
 
-    //set measurement dimension, lidar can measure px and py
+  //cout << "Entering UpdateLidar()" << endl;
+  //set measurement dimension, lidar can measure px and py
   int n_z = 2;
 
   //create matrix for sigma points in measurement space
@@ -298,9 +299,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     double v2 = sin(yaw)*v;
 
     // measurement model
-    Zsig(0,i) = sqrt(p_x*p_x + p_y*p_y);                        //r
-    Zsig(1,i) = atan2(p_y,p_x);                                 //phi
-    Zsig(2,i) = (p_x*v1 + p_y*v2 ) / sqrt(p_x*p_x + p_y*p_y);   //r_dot
+    Zsig(0,i) = p_x;                             //px
+    Zsig(1,i) = p_y;                             //py
   }
 
   //mean predicted measurement
@@ -326,14 +326,13 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   //add measurement noise covariance matrix
   MatrixXd R = MatrixXd(n_z,n_z);
-  R <<    std_radr_*std_radr_, 0, 0,
-          0, std_radphi_*std_radphi_, 0,
-          0, 0,std_radrd_*std_radrd_;
+  R <<    std_laspx_*std_laspx_, 0,
+          0, std_laspy_*std_laspy_;
   S = S + R;
 
   //create example vector for incoming radar measurement
   VectorXd z = VectorXd(n_z);
-  z << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], meas_package.raw_measurements_[2];
+  z << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1];
 
   //create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, n_z);
