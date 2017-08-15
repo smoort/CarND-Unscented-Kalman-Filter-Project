@@ -68,6 +68,10 @@ UKF::UKF() {
 
   // Set Sigma point spreading parameter
   lambda_ = 3 - n_aug_;
+
+  // Initialize Radar and Lidar NIS to zero
+  NIS_radar_ = 0.0;
+  NIS_lidar_ = 0.0;
 }
 
 UKF::~UKF() {}
@@ -369,6 +373,9 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
   P_ = P_ - K*S*K.transpose();
+
+  //cout << "Lidar NIS = " << z_diff.transpose() * S.inverse() * z_diff << endl;
+  NIS_lidar_ = z_diff.transpose() * S.inverse() * z_diff;
 }
 
 /**
@@ -476,4 +483,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
   P_ = P_ - K*S*K.transpose();
+
+  // calculate Radar NIS
+  //cout << "Radar NIS = " << z_diff.transpose() * S.inverse() * z_diff << endl;
+  NIS_radar_ = z_diff.transpose() * S.inverse() * z_diff;
 }
